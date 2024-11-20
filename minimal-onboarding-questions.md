@@ -58,8 +58,8 @@ Solidity                         1             15             47             54
 ## Quickstart
 
 ```
-git clone https://github.com/Score11-io/Score11_Token.git
-cd Score11_Token
+git clone https://github.com/zodax-ai/Zodax_Token.git
+cd Zodax_Token
 npm i
 ```
 
@@ -73,13 +73,9 @@ npx hardhat coverage
 
 # Security Review Scope
 
-## Commit Hash
-
-4c1500aafc857605f1fd1c2a4024f32f55dfc583
-
 ## Repo URL
 
-https://github.com/Score11-io/Score11_Token
+https://github.com/zodax-ai/Zodax_Token
 
 ## In scope vs out of scope contracts
 
