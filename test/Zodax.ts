@@ -12,11 +12,7 @@ describe("ZODAX", function () {
       await hre.ethers.getSigners();
 
     const Token = await hre.ethers.getContractFactory("ZODAX");
-    const token = await Token.deploy(
-      defaultAdmin.address,
-      owner.address,
-      pauser.address
-    );
+    const token = await Token.deploy(defaultAdmin.address, owner.address);
 
     return {
       owner,
@@ -57,15 +53,6 @@ describe("ZODAX", function () {
       ).to.be.true;
     });
 
-    it("Should set the pauser address as the pauser", async function () {
-      const { token, pauser, owner } = await loadFixture(deployZodaxFixture);
-
-      expect(await token.hasRole(await token.PAUSER_ROLE(), pauser.address)).to
-        .be.true;
-      expect(await token.hasRole(await token.PAUSER_ROLE(), owner.address)).to
-        .be.false;
-    });
-
     it("Should set the maxTotalSupply to the 1 Billion", async function () {
       const { token, pauser, owner } = await loadFixture(deployZodaxFixture);
 
@@ -89,138 +76,6 @@ describe("ZODAX", function () {
     });
   });
 
-  describe("Pausing", function () {
-    it("Should pause and unpause the token", async function () {
-      const { token, pauser, owner, defaultAdmin } = await loadFixture(
-        deployZodaxFixture
-      );
-
-      await token.connect(pauser).pause();
-      expect(await token.paused()).to.be.true;
-
-      await token.connect(pauser).unpause();
-      expect(await token.paused()).to.be.false;
-    });
-
-    it("Should not allow transfers when paused", async function () {
-      const { token, pauser, owner, buyer } = await loadFixture(
-        deployZodaxFixture
-      );
-
-      await token.connect(pauser).pause();
-      expect(await token.paused()).to.be.true;
-
-      await expect(
-        token.connect(owner).transfer(buyer.address, ethers.parseEther("1000"))
-      ).to.be.revertedWithCustomError(token, "EnforcedPause");
-    });
-
-    it("Should allow pausing by new pauser", async function () {
-      const { token, pauser, owner, buyer, anotherAccount, defaultAdmin } =
-        await loadFixture(deployZodaxFixture);
-
-      await token
-        .connect(defaultAdmin)
-        .grantRole(await token.PAUSER_ROLE(), anotherAccount.address);
-      await token.connect(anotherAccount).pause();
-      expect(await token.connect(anotherAccount).paused()).to.be.true;
-    });
-
-    it("Should not allow pausing if role is revoked", async function () {
-      const { token, pauser, owner, buyer, anotherAccount, defaultAdmin } =
-        await loadFixture(deployZodaxFixture);
-
-      await token
-        .connect(defaultAdmin)
-        .grantRole(await token.PAUSER_ROLE(), anotherAccount.address);
-      await token.connect(anotherAccount).pause();
-      expect(await token.paused()).to.be.true;
-
-      await token
-        .connect(defaultAdmin)
-        .revokeRole(await token.PAUSER_ROLE(), anotherAccount.address);
-      await expect(
-        token.connect(anotherAccount).pause()
-      ).to.be.revertedWithCustomError(
-        token,
-        "AccessControlUnauthorizedAccount"
-      );
-    });
-  });
-
-  describe("Unpausing", function () {
-    it("Should not allow unpausing by non-pauser", async function () {
-      const { token, pauser, owner, buyer } = await loadFixture(
-        deployZodaxFixture
-      );
-
-      await token.connect(pauser).pause();
-      expect(await token.paused()).to.be.true;
-
-      await expect(
-        token.connect(buyer).unpause()
-      ).to.be.revertedWithCustomError(
-        token,
-        "AccessControlUnauthorizedAccount"
-      );
-    });
-
-    it("Should allow unpausing by pauser", async function () {
-      const { token, pauser, owner, buyer } = await loadFixture(
-        deployZodaxFixture
-      );
-
-      await token.connect(pauser).pause();
-      expect(await token.paused()).to.be.true;
-
-      await token.connect(pauser).unpause();
-      expect(
-        await token
-          .connect(owner)
-          .transfer(buyer.address, ethers.parseEther("1000"))
-      ).to.emit(token, "Transfer");
-
-      expect(await token.balanceOf(buyer.address)).to.equal(
-        ethers.parseEther("1000")
-      );
-    });
-
-    it("Should allow unpausing by new pauser", async function () {
-      const { token, pauser, owner, buyer, anotherAccount, defaultAdmin } =
-        await loadFixture(deployZodaxFixture);
-
-      await token
-        .connect(defaultAdmin)
-        .grantRole(await token.PAUSER_ROLE(), anotherAccount.address);
-      await token.connect(anotherAccount).pause();
-      expect(await token.paused()).to.be.true;
-
-      await token.connect(anotherAccount).unpause();
-      expect(await token.paused()).to.be.false;
-    });
-
-    it("Should not allow unpausing if role is revoked", async function () {
-      const { token, pauser, owner, buyer, anotherAccount, defaultAdmin } =
-        await loadFixture(deployZodaxFixture);
-
-      await token
-        .connect(defaultAdmin)
-        .grantRole(await token.PAUSER_ROLE(), anotherAccount.address);
-      await token.connect(anotherAccount).pause();
-      expect(await token.paused()).to.be.true;
-
-      await token
-        .connect(defaultAdmin)
-        .revokeRole(await token.PAUSER_ROLE(), anotherAccount.address);
-      await expect(
-        token.connect(anotherAccount).unpause()
-      ).to.be.revertedWithCustomError(
-        token,
-        "AccessControlUnauthorizedAccount"
-      );
-    });
-  });
-
   describe("Approve", function () {
     it("Should approve spender to spend tokens", async function () {
       const { token, pauser, owner, buyer } = await loadFixture(
@@ -230,25 +85,6 @@ describe("ZODAX", function () {
       await token
         .connect(owner)
         .approve(buyer.address, ethers.parseEther("1000"));
-      expect(await token.allowance(owner.address, buyer.address)).to.equal(
-        ethers.parseEther("1000")
-      );
-    });
-
-    it("Should allow approval when paused", async function () {
-      const { token, pauser, owner, buyer } = await loadFixture(
-        deployZodaxFixture
-      );
-
-      await token.connect(pauser).pause();
-      expect(await token.paused()).to.be.true;
-
-      expect(
-        await token
-          .connect(owner)
-          .approve(buyer.address, ethers.parseEther("1000"))
-      ).to.be.ok;
-
       expect(await token.allowance(owner.address, buyer.address)).to.equal(
         ethers.parseEther("1000")
       );
@@ -277,38 +113,6 @@ describe("ZODAX", function () {
       expect(await token.balanceOf(buyer.address)).to.equal(
         ethers.parseEther("1000")
       );
-    });
-
-    it("Should allow transfer when unpaused", async function () {
-      const { token, pauser, owner, buyer } = await loadFixture(
-        deployZodaxFixture
-      );
-
-      await token.connect(pauser).pause();
-      expect(await token.paused()).to.be.true;
-
-      await token.connect(pauser).unpause();
-      expect(await token.paused()).to.be.false;
-
-      await token
-        .connect(owner)
-        .transfer(buyer.address, ethers.parseEther("1000"));
-      expect(await token.balanceOf(buyer.address)).to.equal(
-        ethers.parseEther("1000")
-      );
-    });
-
-    it("Should not allow transfers when paused", async function () {
-      const { token, pauser, owner, buyer } = await loadFixture(
-        deployZodaxFixture
-      );
-
-      await token.connect(pauser).pause();
-      expect(await token.paused()).to.be.true;
-
-      await expect(
-        token.connect(owner).transfer(buyer.address, ethers.parseEther("1000"))
-      ).to.be.revertedWithCustomError(token, "EnforcedPause");
     });
 
     it("Should not allow transfers to the zero address", async function () {
@@ -359,24 +163,6 @@ describe("ZODAX", function () {
       );
     });
 
-    it("Should not allow transfers when paused", async function () {
-      const { token, pauser, owner, buyer } = await loadFixture(
-        deployZodaxFixture
-      );
-
-      await token.connect(pauser).pause();
-      expect(await token.paused()).to.be.true;
-
-      await token
-        .connect(owner)
-        .approve(buyer.address, ethers.parseEther("1000"));
-      await expect(
-        token
-          .connect(buyer)
-          .transferFrom(owner.address, buyer.address, ethers.parseEther("1000"))
-      ).to.be.revertedWithCustomError(token, "EnforcedPause");
-    });
-
     it("Should not allow transfers to the zero address", async function () {
       const { token, pauser, owner, buyer } = await loadFixture(
         deployZodaxFixture
@@ -413,32 +199,6 @@ describe("ZODAX", function () {
       await expect(
         token.connect(buyer).burn(ethers.parseEther("1000"))
       ).to.be.revertedWithCustomError(token, "ERC20InsufficientBalance");
-    });
-
-    it("Should not allow burning when paused", async function () {
-      const { token, pauser, owner } = await loadFixture(deployZodaxFixture);
-
-      await token.connect(pauser).pause();
-      expect(await token.paused()).to.be.true;
-
-      await expect(
-        token.connect(owner).burn(ethers.parseEther("100"))
-      ).to.be.revertedWithCustomError(token, "EnforcedPause");
-    });
-
-    it("Should allow burning when unpaused", async function () {
-      const { token, pauser, owner } = await loadFixture(deployZodaxFixture);
-
-      await token.connect(pauser).pause();
-      expect(await token.paused()).to.be.true;
-
-      await token.connect(pauser).unpause();
-      expect(await token.paused()).to.be.false;
-
-      await token.connect(owner).burn(ethers.parseEther("100"));
-      expect(await token.balanceOf(owner.address)).to.equal(
-        ethers.parseEther("999999900")
-      );
     });
   });
 
@@ -559,32 +319,6 @@ describe("ZODAX", function () {
           .emergencyWithdraw(testToken.target, anotherAccount.address, 0)
       ).to.be.revertedWith("Invalid amount");
     });
-
-    it("Should allow emergencyWithdraw when paused ", async function () {
-      const { token, defaultAdmin, anotherAccount, pauser } = await loadFixture(
-        deployZodaxFixture
-      );
-
-      const TestToken = await ethers.getContractFactory("TestToken");
-      const testToken = await TestToken.deploy();
-
-      await testToken.mint(token.target, ethers.parseEther("500"));
-
-      await token.connect(pauser).pause();
-      expect(await token.paused()).to.be.true;
-
-      await token
-        .connect(defaultAdmin)
-        .emergencyWithdraw(
-          testToken.target,
-          anotherAccount.address,
-          ethers.parseEther("500")
-        );
-
-      expect(await testToken.balanceOf(anotherAccount.address)).to.equal(
-        ethers.parseEther("500")
-      );
-    });
   });
 
   describe("Access Control", function () {
@@ -593,19 +327,20 @@ describe("ZODAX", function () {
         deployZodaxFixture
       );
 
-      const PAUSER_ROLE = await token.PAUSER_ROLE();
-      await token.connect(defaultAdmin).grantRole(PAUSER_ROLE, buyer.address);
-
-      expect(await token.hasRole(PAUSER_ROLE, buyer.address)).to.be.true;
+      const defaultAdminRole = await token.DEFAULT_ADMIN_ROLE();
+      expect(
+        await token
+          .connect(defaultAdmin)
+          .grantRole(defaultAdminRole, buyer.address)
+      ).to.be.ok;
     });
 
     it("Should prevent non-admin from assigning roles", async function () {
       const { token, buyer } = await loadFixture(deployZodaxFixture);
 
-      const PAUSER_ROLE = await token.PAUSER_ROLE();
-
+      const defaultAdminRole = await token.DEFAULT_ADMIN_ROLE();
       await expect(
-        token.connect(buyer).grantRole(PAUSER_ROLE, buyer.address)
+        token.connect(buyer).grantRole(defaultAdminRole, buyer.address)
       ).to.be.revertedWithCustomError(
         token,
         "AccessControlUnauthorizedAccount"
