@@ -14,15 +14,6 @@ The ZODAX token contract is an ERC20 token with additional functionalities such 
 
 ## Features
 
-### Pausing
-
-The contract includes pausing functionality, allowing authorized accounts to pause and unpause token transfers.
-
-- **Role**: PAUSER_ROLE
-- **Functions**:
-  - `pause()`: Pauses all token transfers.
-  - `unpause()`: Resumes token transfers after being paused.
-
 ### Burning
 
 Token holders can burn their tokens, reducing the total supply.
@@ -51,7 +42,6 @@ The contract uses OpenZeppelin's AccessControl for role-based access management.
 
 - **Roles**:
   - `DEFAULT_ADMIN_ROLE`: Admin role with full control over the contract.
-  - `PAUSER_ROLE`: Role authorized to pause and unpause token transfers.
 
 ## Deployment
 
@@ -59,7 +49,6 @@ The contract is deployed with the following parameters:
 
 - `defaultAdmin`: Address assigned the DEFAULT_ADMIN_ROLE.
 - `owner`: Address receiving the initial max token supply.
-- `pauser`: Address granted the PAUSER_ROLE.
 
 ## Contract Code
 
