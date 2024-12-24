@@ -2,7 +2,7 @@
 
 ## Overview
 
-The ZODAX token contract is an ERC20 token with additional functionalities such as pausing, burning, and permit-based approvals. The contract is built using OpenZeppelin's libraries to ensure security and reliability.
+The ZODAX token contract is an ERC20 token with additional functionalities such as burning, and permit-based approvals. The contract is built using OpenZeppelin's libraries to ensure security and reliability.
 
 ## Contract Details
 
@@ -16,8 +16,7 @@ The ZODAX token contract is an ERC20 token with additional functionalities such 
 
 ### Burning
 
-Token holders can burn their tokens, reducing the total supply.
-
+Token holders can burn their tokens, reducing the total supply
 - **Functions**:
   - `burn(uint256 amount)`: Burns a specified amount of tokens from the caller's account.
 
@@ -67,7 +66,6 @@ The contract has been thoroughly tested using Hardhat and Chai. The test cases c
 The tests ensure that:
 
 - The contract is deployed correctly with the expected initial state.
-- Only authorized accounts can pause and unpause token transfers.
 - Token holders can burn their tokens.
 - Permit-based approvals work as expected.
 - Emergency withdrawals are restricted to authorized accounts.
