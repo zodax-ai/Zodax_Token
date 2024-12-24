@@ -20,7 +20,7 @@
 
 # About the project / Documentation
 
-The ZODAX token contract is an ERC20 token with additional functionalities such as pausing, burning, and permit-based approvals. The contract is built using OpenZeppelin's libraries to ensure security and reliability.
+The ZODAX token contract is an ERC20 token with additional functionalities such as burning, and permit-based approvals. The contract is built using OpenZeppelin's libraries to ensure security and reliability.
 
 # Stats
 
@@ -39,13 +39,13 @@ Result for the above command
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-Solidity                         1             15             47             54
+Solidity                         1             12             42             38
 -------------------------------------------------------------------------------
 ```
 
 ## Solidity
 
-- nSLOC: 54
+- nSLOC: 38
 
 # Setup
 
@@ -91,7 +91,6 @@ https://github.com/zodax-ai/Zodax_Token
 # Roles
 
 - `defaultAdmin`: Address assigned the DEFAULT_ADMIN_ROLE and can call admin function: emergencyWithdraw().
-- `pauser`: Address granted the PAUSER_ROLE, and can pause or unpause the contract.
 
 # Known Issues
 
