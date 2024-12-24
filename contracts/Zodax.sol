@@ -23,7 +23,6 @@ pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Pausable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 
@@ -32,18 +31,9 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 /// @dev Inherits from OpenZeppelin's:
 ///      - ERC20: Standard ERC20 implementation
 ///      - ERC20Burnable: Allows token burning
-///      - ERC20Pausable: Enables pausing of token transfers
 ///      - AccessControl: Role-based access management
 ///      - ERC20Permit: Permit-based approvals
-contract ZODAX is
-    ERC20,
-    ERC20Burnable,
-    ERC20Pausable,
-    AccessControl,
-    ERC20Permit
-{
-    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
-
+contract ZODAX is ERC20, ERC20Burnable, AccessControl, ERC20Permit {
     uint256 public maxTotalSupply = 1000000000 * 10 ** decimals();
 
     event EmergencyWithdraw(address token, address recipient, uint256 amount);
@@ -51,27 +41,13 @@ contract ZODAX is
     /// @notice Initializes the Zodax token contract.
     /// @param defaultAdmin Address assigned the DEFAULT_ADMIN_ROLE.
     /// @param owner Address receiving the initial max token supply.
-    /// @param pauser Address granted the PAUSER_ROLE.
+    /// @dev Mints the max token supply to the owner.
     constructor(
         address defaultAdmin,
-        address owner,
-        address pauser
+        address owner
     ) ERC20("ZODAX", "ZODX") ERC20Permit("ZODAX") {
         _grantRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
-        _grantRole(PAUSER_ROLE, pauser);
         _mint(owner, maxTotalSupply);
-    }
-
-    /// @notice Pauses all token transfers.
-    /// @dev Callable only by accounts with the PAUSER_ROLE.
-    function pause() public onlyRole(PAUSER_ROLE) {
-        _pause();
-    }
-
-    /// @notice Resumes token transfers after being paused.
-    /// @dev Callable only by accounts with the PAUSER_ROLE.
-    function unpause() public onlyRole(PAUSER_ROLE) {
-        _unpause();
     }
 
     /// @notice Fetches the maximum total supply of the token.
@@ -110,7 +86,7 @@ contract ZODAX is
         address from,
         address to,
         uint256 value
-    ) internal override(ERC20, ERC20Pausable) {
+    ) internal override(ERC20) {
         super._update(from, to, value);
     }
 }
